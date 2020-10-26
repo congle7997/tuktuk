@@ -304,8 +304,8 @@
 	    //$event_json = json_decode($input,true);
 
 		$event_json = json_decode(file_get_contents('php://input'), true);
-		echo ($event_json);
-		die();
+		// echo ($event_json);
+		// die();
 	
 		//get headers
 		$headers = apache_request_headers();
@@ -733,7 +733,7 @@
 			
 			@mysqli_query($conn,"update users set tokon='".$token."' where fb_id='".$fb_id."' ");
 			
-			
+
 			if(isset($event_json['video_id']))
 			{
 			    $query=mysqli_query($conn,"select * from videos where id='".$event_json['video_id']."' ");
@@ -752,6 +752,7 @@
 		        $rd=mysqli_fetch_object($query1);
 		       
 		        $query112=mysqli_query($conn,"select * from sound where id='".$row['sound_id']."' ");
+		       
 		        $rd12=mysqli_fetch_object($query112);
 		        
 		        $countLikes = mysqli_query($conn,"SELECT count(*) as count from video_like_dislike where video_id='".$row['id']."' ");
@@ -760,16 +761,21 @@
 		        $countcomment = mysqli_query($conn,"SELECT count(*) as count from video_comment where video_id='".$row['id']."' ");
                 $countcomment_count=mysqli_fetch_assoc($countcomment);
                 
-
-               
+   
+               	
+               	$fb_id = $row['fb_id'];
                	if (isset($fb_id)) {
                		$liked = mysqli_query($conn,"SELECT count(*) as count from video_like_dislike where video_id='".$row['id']."' and fb_id='".$fb_id."' ");
                	}
-                
+               	
+               
                 if (isset($liked)) {
-                	$liked_count=mysqli_fetch_assoc();
+                	$liked_count = mysqli_fetch_assoc($liked);
                 }
                 
+
+                echo ($rd12->id);
+                die();
 		        
         	   	$array_out[] = 
         			array(

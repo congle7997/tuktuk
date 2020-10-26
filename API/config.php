@@ -30,8 +30,7 @@
     
 	// Create connection
 	$conn = mysqli_connect($servername, $username, $password, $database);
-	echo ($conn);
-	die();
+
     mysqli_query($conn,"SET SESSION sql_mode = 'NO_ENGINE_SUBSTITUTION'");
 	// Check connection
 
