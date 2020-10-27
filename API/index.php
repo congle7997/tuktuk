@@ -774,8 +774,7 @@
                 }
                 
 
-                echo ($rd12->id);
-                die();
+              
 		        
         	   	$array_out[] = 
         			array(
@@ -2036,6 +2035,7 @@
 		    }
 		    
 		}
+		//$output=array( "code" => "200", "msg" => $array_out2);
 		$output=array( "code" => "200", "msg" => $array_out2);
 		print_r(json_encode($output, true));
 		
