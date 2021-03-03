@@ -300,13 +300,11 @@
 	function signup()
 	{
 		require_once("config.php");
-	    //$input = @file_get_contents("php://input");
-	    //$event_json = json_decode($input,true);
-
-		$event_json = json_decode(file_get_contents('php://input'), true);
-		// echo ($event_json);
-		// die();
-	
+	    $input = @file_get_contents("php://input");
+	    $event_json = json_decode($input,true);
+	    /*print($_Po['fbId']);
+	    die();*/
+		
 		//get headers
 		$headers = apache_request_headers();
 	    
@@ -316,13 +314,6 @@
 	    $header_deviceid = $headers['deviceid'];
 	    //get headers
 	    
-	    /*echo ($_POST['fb_id']);
-	    echo ($_POST['first_name']);
-	    echo ($_POST['last_name']);
-		die();*/
-
-		//isset($event_json['fb_id']) && isset($event_json['first_name']) && isset($event_json['last_name'])
-		// replace "$event_json" by "$_POST"
 		if(isset($_POST['fb_id']) && isset($_POST['first_name']) && isset($_POST['last_name']))
 		{
 			$fb_id=htmlspecialchars(strip_tags($_POST['fb_id'] , ENT_QUOTES));
@@ -330,7 +321,7 @@
 			$last_name=htmlspecialchars(strip_tags($_POST['last_name'] , ENT_QUOTES));
 			$gender=htmlspecialchars(strip_tags($_POST['gender'] , ENT_QUOTES));
 			$profile_pic=htmlspecialchars_decode(stripslashes($_POST['profile_pic']));
-			$version=htmlspecialchars_decode(stripslashes($_POST['version']));
+			$version=htmlspecialchars_decode(stripslashes($headers['version']));
 			$device=htmlspecialchars_decode(stripslashes($_POST['device']));
 			$signup_type=htmlspecialchars_decode(stripslashes($_POST['signup_type']));
 		    $username=$first_name.rand();
@@ -341,12 +332,15 @@
 			$get_device_tkon="select * from device_tokon where fb_id='".$fb_id."' and phone_id='".$header_deviceid."' ";
 			$get_device_tkon1=mysqli_query($conn,$get_device_tkon);
 			$dvice_tokon=mysqli_fetch_object($get_device_tkon1);
-
 			
-
+			if (is_null($dvice_tokon)) {
+				$dvice_tokon = "";
+			}
+			
 			if(mysqli_num_rows($log_in_rs))
 			{   
 			    $rd=mysqli_fetch_object($log_in_rs);  
+			     
 				if($rd->block=='0')
 				{
 					$array_out = array();
@@ -361,7 +355,8 @@
 							"username" => $rd->username,
 							"bio" => $rd->bio,
 							"gender" => $rd->gender,
-							"tokon" => $rd->tokon
+							"tokon" => ""
+							//"tokon" => $dvice_tokon->tokon
 						);
 					
 					$output=array( "code" => "200", "msg" => $array_out);
@@ -551,7 +546,6 @@
 		//print_r($event_json);
 		
 		//checkTokon();
-
 		
 		if(isset($event_json['fb_id']) && isset($event_json['picbase64'])  && isset($event_json['videobase64']))
 		{   
@@ -570,7 +564,7 @@
 			/*list($type, $data) = explode(',', $data);
 			list(, $data)      = explode(',', $data);*/
 			
-
+			
 			if(media_storage=="s3")
 			 {  
 			    $thum = base64_decode($thum);
@@ -718,25 +712,19 @@
 	    $event_json = json_decode($input,true);
 		//print_r($event_json);
 	    
-
-        //$event_json['fb_id']
+	     
+        
 		if(isset($_POST['fb_id']))
 		{
-			if (isset($event_json['fb_id'])) {
-				$fb_id = htmlspecialchars(strip_tags($event_json['fb_id'] , ENT_QUOTES));
-			}
-			
-			if (isset($event_json['token'])) {
-				$token=$event_json['token'];
-			}
-			
+			$fb_id=htmlspecialchars(strip_tags($_POST['fb_id'] , ENT_QUOTES));
+			$token=$_POST['token'];
 			
 			@mysqli_query($conn,"update users set tokon='".$token."' where fb_id='".$fb_id."' ");
 			
-
-			if(isset($event_json['video_id']))
+			
+			if(isset($_POST['video_id']))
 			{
-			    $query=mysqli_query($conn,"select * from videos where id='".$event_json['video_id']."' ");
+			    $query=mysqli_query($conn,"select * from videos where id='".$_POST['video_id']."' ");
 			}
 			else
 			{
@@ -752,7 +740,6 @@
 		        $rd=mysqli_fetch_object($query1);
 		       
 		        $query112=mysqli_query($conn,"select * from sound where id='".$row['sound_id']."' ");
-		       
 		        $rd12=mysqli_fetch_object($query112);
 		        
 		        $countLikes = mysqli_query($conn,"SELECT count(*) as count from video_like_dislike where video_id='".$row['id']."' ");
@@ -761,20 +748,9 @@
 		        $countcomment = mysqli_query($conn,"SELECT count(*) as count from video_comment where video_id='".$row['id']."' ");
                 $countcomment_count=mysqli_fetch_assoc($countcomment);
                 
-   
-               	
-               	$fb_id = $row['fb_id'];
-               	if (isset($fb_id)) {
-               		$liked = mysqli_query($conn,"SELECT count(*) as count from video_like_dislike where video_id='".$row['id']."' and fb_id='".$fb_id."' ");
-               	}
-               	
-               
-                if (isset($liked)) {
-                	$liked_count = mysqli_fetch_assoc($liked);
-                }
                 
-
-              
+                $liked = mysqli_query($conn,"SELECT count(*) as count from video_like_dislike where video_id='".$row['id']."' and fb_id='".$fb_id."' ");
+                $liked_count=mysqli_fetch_assoc($liked);
 		        
         	   	$array_out[] = 
         			array(
@@ -797,20 +773,20 @@
         			"thum" => checkVideoUrl($row['thum']),
         			"gif" => checkVideoUrl($row['gif']),
         			"description" => $row['description'],
-        			"sound" =>array
-            					(
-            					    "id" => $rd12->id,
-            					    "audio_path" => 
-                            			array(
-                                			"mp3" => $API_path."/upload/audio/".$rd12->id.".mp3",
-                    			            "acc" => $API_path."/upload/audio/".$rd12->id.".aac"
-                                		),
-                        			"sound_name" => $rd12->sound_name,
-                        			"description" => $rd12->description,
-                        			"thum" => $rd12->thum,
-                        			"section" => $rd12->section,
-                        			"created" => $rd12->created,
-            					),
+        			// "sound" =>array
+           //  					(
+           //  					    "id" => $rd12->id,
+           //  					    "audio_path" => 
+           //                  			array(
+           //                      			"mp3" => $API_path."/upload/audio/".$rd12->id.".mp3",
+           //          			            "acc" => $API_path."/upload/audio/".$rd12->id.".aac"
+           //                      		),
+           //              			"sound_name" => $rd12->sound_name,
+           //              			"description" => $rd12->description,
+           //              			"thum" => $rd12->thum,
+           //              			"section" => $rd12->section,
+           //              			"created" => $rd12->created,
+           //  					),
         			"created" => $row['created']
         		);
     			
@@ -2035,7 +2011,6 @@
 		    }
 		    
 		}
-		//$output=array( "code" => "200", "msg" => $array_out2);
 		$output=array( "code" => "200", "msg" => $array_out2);
 		print_r(json_encode($output, true));
 		

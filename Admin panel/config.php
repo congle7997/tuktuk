@@ -9,7 +9,7 @@
 ////API host link
 
 $app_name="TicTic";
-$apiURL="http://192.168.1.143/congle7997/tuktuk/API/";
+$apiURL="http://192.168.1.142/congle7997/tuktuk/API/";
 $baseurl = $apiURL."index.php?p=";
 
 $app_picture="img/favicon.png";
