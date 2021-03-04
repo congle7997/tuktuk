@@ -6,7 +6,8 @@
     
 	//web API path
 	//eg http://domain.com/API/
-	$API_path="http://domain.com/API/";
+	//$API_path="http://domain.com/API/";
+	$API_path="http://192.168.20.253/tuktuk/API";
 	define("API_path",$API_path);
 	
 	// check how you can get firebase server key https://i.gyazo.com/7c3f23a30c14d3008533605a9821f944.png
